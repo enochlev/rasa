@@ -408,6 +408,61 @@ class Agent:
 
         return await self.processor.parse_message(message)  # type: ignore[union-attr]
 
+    @agent_must_be_ready
+    async def parse_incremental(
+        self,
+        incremental_unit: Union[(Text,Text),
+        Dict[Text, Any]]) -> Dict[Text, Any]:
+        """Handles incremental message text and intent payload input messages.
+
+        The return value of this function is parsed_data.
+        Equivilent to parse_message, except for adds format the message as so 
+
+        WARNING: Must include increntalizer component with default component values
+        
+
+        Args:
+            incremental_unit  Tuple(message,IU_command): IU for incremental RASA
+                message str: any message to parse
+                IU_command str: IU command from list ["ADD","REVOKE","COMMIT"]
+
+            Example:
+                incremental_parse_message(("What is the weather two","ADD"))
+                incremental_parse_message(("two","REVOKE"))
+                incremental_parse_message(("today","ADD"))
+
+        Returns:
+            The parsed message.
+
+            Example:
+
+                {\
+                    "text": '/greet{"name":"Rasa"}',\
+                    "intent": {"name": "greet", "confidence": 1.0},\
+                    "intent_ranking": [{"name": "greet", "confidence": 1.0}],\
+                    "entities": [{"entity": "name", "start": 6,\
+                                  "end": 21, "value": "Rasa"}],\
+                }
+
+        """
+        message = incremental_unit[0]
+        if isinstance(incremental_unit, tuple):
+            iu_command  = incremental_unit[1].upper()
+            assert iu_command in ['ADD','REVOKE','COMMIT'], "expected text_message[1] to be either 'ADD','REVOKE','COMMIT' of type str"
+            message = message + " /" + iu_command
+
+        return await self.parse_message(message)  # type: ignore[union-attr]
+
+    @agent_must_be_ready
+    async def new_utterance(
+        self,
+        ) -> None:
+        """
+            Equivilent to Calling COMMIT without return NLU data
+        """
+        await self.parse_message("/COMMIT")  # type: ignore[union-attr]
+
+
     async def handle_message(
         self, message: UserMessage
     ) -> Optional[List[Dict[Text, Any]]]:
