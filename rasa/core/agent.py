@@ -427,9 +427,11 @@ class Agent:
                 IU_command str: IU command from list ["ADD","REVOKE","COMMIT"]
 
             Example:
-                incremental_parse_message(("What is the weather two","ADD"))
-                incremental_parse_message(("two","REVOKE"))
-                incremental_parse_message(("today","ADD"))
+                from rasa.core.agent import Agent
+                agent = Agent.load("examples/moodbot/models")
+                parse_incremental(("What is the weather two","ADD"))
+                parse_incremental(("two","REVOKE"))
+                parse_incremental(("today","ADD"))
 
         Returns:
             The parsed message.

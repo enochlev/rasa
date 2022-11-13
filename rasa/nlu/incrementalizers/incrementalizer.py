@@ -16,7 +16,7 @@ COMMIT = "COMMIT"
 
 # TODO: Correctly register your component with its type
 @DefaultV1Recipe.register(
-    [10], is_trainable=False
+    DefaultV1Recipe.ComponentType.MESSAGE_TOKENIZER, is_trainable=False
 )
 
 class Incrementalizer(GraphComponent):
@@ -51,12 +51,12 @@ class Incrementalizer(GraphComponent):
             "ADD_Key": "/ADD",
             "REVOKE_Key": "/REVOKE",
             "COMMIT_Key": "/COMMIT",
-            "Default_Key": ADD
+            "Default_Key": COMMIT
         }
 
-    def train(self, training_data: TrainingData) -> Resource:
-        # TODO: Implement this if your component requires training
-        ...
+    # def train(self, training_data: TrainingData) -> Resource:
+    #     # TODO: Implement this if your component requires training
+    #     ...
     
     def process_training_data(self, training_data: TrainingData) -> TrainingData:
         return training_data
@@ -97,14 +97,14 @@ class Incrementalizer(GraphComponent):
 
     def update_message_with_IU_command(self, message: Message, iu_command: str) -> Message:
 
-        if iu_command == ADD:
+        if iu_command == ADD or iu_command == COMMIT:
 
             self.full_message += " " + message.get('iu_message')
             self.full_message = self.full_message.strip()
             message.set('text',self.full_message)
 
 
-        elif iu_command == REVOKE:
+        if iu_command == REVOKE:
             if message.get('iu_message') in self.full_message and message.get('iu_message') != "":
                 #replaces the last occurance of the REVOKE message
                 self.full_message = "".join(self.full_message.rsplit(message.get('iu_message'), 1)).replace("  ", " ")
@@ -118,7 +118,7 @@ class Incrementalizer(GraphComponent):
                 pass
     
     
-        elif iu_command == COMMIT:
+        if iu_command == COMMIT:
 
             #set text to full message
             message.set('text',self.full_message)
